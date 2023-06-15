@@ -143,10 +143,10 @@ client.on("interactionCreate", async interaction => {
 										{
 											name: 'Kills',
 											value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
-											inline: false
+											inline: true
 										},
 										{
-											name: 'Total Deaths',
+											name: 'Deaths',
 											value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
 											inline: true
 										},
@@ -154,13 +154,14 @@ client.on("interactionCreate", async interaction => {
 											name: 'K/D Ratio',
 											// Cut off to the first decimal place
 											//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
-											value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+											//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+											value: `SCP K/D: ${(rows[0].HumanKills / rows[0].ScpDeaths).toFixed(1)}\nHuman K/D: ${(rows[0].ScpKills / rows[0].HumanDeaths).toFixed(1)}`,
 											inline: true
 										},
 										{
 											name: 'Total Shots Fired',
 											value: `${rows[0].ShotsFired}`,
-											inline: false
+											inline: true
 										},
 										{
 											name: 'Total Hits',
@@ -178,7 +179,7 @@ client.on("interactionCreate", async interaction => {
 											name: "Total Playtime",
 											// get from rows.MinutesPlayed, and calculate days hours and minutes
 											value: formatTime(rows[0].MinutesPlayed),
-											inline: false
+											inline: true
 										},
 										{
 											name: "Total Escapes",
