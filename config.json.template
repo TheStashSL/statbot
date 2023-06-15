@@ -4,10 +4,9 @@
 	},
 	"steam_api_key": "",
 	"database": {
-		"host": "",
-		"port": "",
+		"host": "127.0.0.1",
 		"user": "",
 		"password": "",
-		"database": ""
+		"database": "playerstats"
 	}
 }
