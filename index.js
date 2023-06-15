@@ -136,6 +136,9 @@ client.on("interactionCreate", async interaction => {
 									author: {
 										name: "SCP:SL Stats"
 									},
+									thumbnail: {
+										url: data.response.players[0].avatarfull
+									},
 									fields: [
 										{
 											name: 'Total Kills',
