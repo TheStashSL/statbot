@@ -191,7 +191,7 @@ client.on("interactionCreate", async interaction => {
 									],
 									timestamp: new Date(),
 								};
-								await interaction.edit({ embeds: [embed] });
+								await interaction.editReply({ embeds: [embed] });
 							}
 						});
 					}
