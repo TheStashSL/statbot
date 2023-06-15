@@ -83,11 +83,16 @@ client.on("interactionCreate", async interaction => {
 	switch (interaction.commandName) {
 		case "stats":
 			await interaction.deferReply();
+			// check if identifier has a suffix, if not assume steam
+			let ident = interaction.options.getString("identifier");
+			if (!ident.includes("@")) {
+				ident += "@steam";
+			}
 			// Get stats from database
 			let conn;
 			try {
 				conn = await pool.getConnection();
-				const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [interaction.options.getString("identifier")]);
+				const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
 				if (rows.length === 0) {
 					await interaction.editReply({ content: "No stats found for that identifier.", ephemeral: true });
 				} else {
