@@ -82,7 +82,7 @@ client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
 	switch (interaction.commandName) {
 		case "stats":
-			interaction.deferReply();
+			await interaction.deferReply();
 			// Get stats from database
 			let conn;
 			try {
