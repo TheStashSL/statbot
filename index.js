@@ -82,6 +82,7 @@ client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
 	switch (interaction.commandName) {
 		case "stats":
+			interaction.deferReply();
 			// Get stats from database
 			let conn;
 			try {
@@ -190,7 +191,7 @@ client.on("interactionCreate", async interaction => {
 									],
 									timestamp: new Date(),
 								};
-								await interaction.reply({ embeds: [embed], ephemeral: true });
+								await interaction.edit({ embeds: [embed] });
 							}
 						});
 					}
