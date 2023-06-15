@@ -141,13 +141,13 @@ client.on("interactionCreate", async interaction => {
 									},
 									fields: [
 										{
-											name: 'Total Kills',
-											value: `${rows[0].ScpKills + rows[0].HumanKills}`,
+											name: 'Kills',
+											value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
 											inline: false
 										},
 										{
 											name: 'Total Deaths',
-											value: `${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
+											value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
 											inline: true
 										},
 										{
