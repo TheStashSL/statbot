@@ -89,7 +89,7 @@ client.on("interactionCreate", async interaction => {
 				conn = await pool.getConnection();
 				const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [interaction.options.getString("identifier")]);
 				if (rows.length === 0) {
-					await interaction.reply({ content: "No stats found for that identifier.", ephemeral: true });
+					await interaction.editReply({ content: "No stats found for that identifier.", ephemeral: true });
 				} else {
 					// Lets get their username, identifiers are their user ID for their respective platform suffexed with either @discord or @steam to say which platform it is
 					let username = "";
