@@ -158,7 +158,7 @@ client.on("interactionCreate", async interaction => {
 											inline: true
 										},
 										{
-											name: 'Total Shots',
+											name: 'Total Shots Fired',
 											value: `${rows[0].ShotsFired}`,
 											inline: false
 										},
