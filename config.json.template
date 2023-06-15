@@ -1,0 +1,13 @@
+{
+	"discord": {
+		"token": ""
+	},
+	"steam_api_key": "",
+	"database": {
+		"host": "",
+		"port": "",
+		"user": "",
+		"password": "",
+		"database": ""
+	}
+}
