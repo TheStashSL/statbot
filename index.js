@@ -96,6 +96,9 @@ client.on("interactionCreate", async interaction => {
 				if (rows.length === 0) {
 					await interaction.editReply({ content: "No stats found for that identifier.", ephemeral: true });
 				} else {
+					// Get points from `Points` table
+					points = await conn.query("SELECT Value FROM Points WHERE Identifier = ?", [ident]);
+					points = points[0].Value;
 					// Lets get their username, identifiers are their user ID for their respective platform suffexed with either @discord or @steam to say which platform it is
 					let username = "";
 					if (rows[0].Identifier.includes("@discord")) {
@@ -176,6 +179,11 @@ client.on("interactionCreate", async interaction => {
 											name: "Fastest Escape",
 											// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
 											value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+											inline: true
+										},
+										{
+											name: "Points",
+											value: points,
 											inline: true
 										}
 									],
