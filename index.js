@@ -112,28 +112,9 @@ client.on("interactionCreate", async interaction => {
 						const steamID = rows[0].Identifier.split("@steam")[0];
 						await steamClient.getPlayerSummaries({
 							steamids: steamID,
-							callback: async (err, data) => {
-								if (err) {
-									console.log(err);
-								}
+							callback: async (status, data) => {
+								
 								username = data.response.players[0].personaname;
-								console.log(`username: ${username}`)
-								// Lets build a funny embed
-								// const embed = new Discord.EmbedBuilder()
-								// 	.setColor("#0099ff")
-								// 	.setTitle(`${username}'s Stats`)
-								// 	.setURL(`https://steamcommunity.com/profiles/${steamID}`)
-								// 	.setAuthor({name: "SCP:SL Stats"})
-								// 	// add fields
-								// 	.addField(
-								// 		{ name: 'Total Kills', value: rows[0].ScpKills + rows[0].HumanKills, inline: true }
-								// 		{ name: 'Total Deaths', value: rows[0].ScpDeaths + rows[0].HumanDeaths, inline: true },
-								// 		{ name: 'K/D Ratio', value: (rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths) , inline: true },
-								// 		{ name: 'Total Shots', value: rows[0].ShotsFired, inline: true },
-								// 		{ name: 'Total Hits', value: rows[0].ShotsHit, inline: true },
-								// 		{ name: 'Accuracy', value: (rows[0].ShotsHit / rows[0].ShotsFired) * 100, inline: true },
-								// 	)
-								// 	.setTimestamp()
 								const embed = {
 									color: 0x0099ff,
 									title: `${username}'s Stats`,

@@ -11,5 +11,10 @@
 				"required": true
 			}
 		]
+	},
+	{
+		"name": "leaderboard",
+		"description": "Show the top 10 players",
+		"type": 1
 	}
 ]
