@@ -1,0 +1,392 @@
+case "leaderboard": // leaderboard command shows top 10 player points
+			await interaction.deferReply();
+			// Get top 10 players from `Points` table
+			option = interaction.options.get("type").value || "points";
+			try {
+				const conn = await pool.getConnection();
+				switch (option) {
+					case "points":
+						rows = await conn.query("SELECT * FROM Points ORDER BY Value DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by points\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "humankills": // Top 10 human killers
+						rows = await conn.query("SELECT * FROM Stats ORDER BY HumanKills DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by humans killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "scpkills": // Top 10 SCP killers
+						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpKills DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by SCPs killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "escapes": // Top 10 escapees
+						rows = await conn.query("SELECT * FROM Stats ORDER BY TimesEscaped DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by total escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "fastestescape": // Top 10 fastest escapees, gotta order by ascending this time
+						rows = await conn.query("SELECT * FROM Stats ORDER BY FastestEscape ASC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by fastest escape\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "kd": // This time we gotta get and calculate the data ourselves because the database doesn't store it
+						rows = await conn.query("SELECT * FROM Stats");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Calculate KD for everyone then sort it and get the top 10, higher means better
+							top10 = rows.map(row => {
+								const kd = row.HumansKilled / row.ScpKills;
+								return {
+									kd,
+									identifier: row.Identifier
+								};
+							}
+							).sort((a, b) => b.kd - a.kd).slice(0, 10);
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: top10.map(row => row.identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by KD\n${top10.map((row, index) => `${index + 1}. ${names[index]} - ${row.kd}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "accuracy": // Shot accuracy, higher percentage is better
+						rows = await conn.query("SELECT * FROM Stats");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Calculate accuracy for everyone then sort it and get the top 10, higher means better
+							top10 = rows.map(row => {
+								const accuracy = (row.ShotsFired / row.ShotsHit * 100).toFixed(1);
+								return {
+									accuracy,
+									identifier: row.Identifier
+								};
+							}
+							).sort((a, b) => b.accuracy - a.accuracy).slice(0, 10);
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: top10.map(row => row.identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by accuracy\n${top10.map((row, index) => `${index + 1}. ${names[index]} - ${row.accuracy}%`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "scpitems": // Most SCP items used
+						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpItemsUsed DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItemsUsed}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "throwables": // Most throwable items used, select *, columns of interest are HeGrenadesThrown, FlashbangsThrown, and Scp018sThrown, and GhostLightsThrown
+						rows = await conn.query("SELECT * FROM Stats ORDER BY HeGrenadesThrown + FlashbangsThrown + Scp018sThrown + GhostLightsThrown DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by throwable items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HeGrenadesThrown + row.FlashbangsThrown + row.Scp018sThrown + row.GhostLightsThrown}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "healing": // Self healing items used, select *, columns of interest are MedkitsUsed, AdrenalinesUsed, and PainkillersUsed
+						rows = await conn.query("SELECT * FROM Stats ORDER BY MedkitsUsed + AdrenalinesUsed + PainkillersUsed DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by self healing items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.MedkitsUsed + row.AdrenalinesUsed + row.PainkillersUsed}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "playtime": // Playtime
+						rows = await conn.query("SELECT * FROM Stats ORDER BY MinutesPlayed DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by playtime\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatTime(row.MinutesPlayed)}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+				}
+			} catch (err) {
+				console.error(err);
+			}
+			break
+
+
+
+
+
+
+
+
+
+
+
+
+			commands.json
+			,
+	{
+		"name": "leaderboard",
+		"description": "Show the top 10 players",
+		"type": 1,
+		"options": [
+			{
+				"name": "type",
+				"description": "Type of leaderboard",
+				"type": 3,
+				"required": false,
+				"choices": [
+					{
+						"name": "Points (Default)",
+						"value": "points"
+					},
+					{
+						"name": "Killed Humans",
+						"value": "humankills"
+					},
+					{
+						"name": "Killed SCPs",
+						"value": "scpkills"
+					},
+					{
+						"name": "Deaths as Human",
+						"value": "humandeaths"
+					},
+					{
+						"name": "Deaths as SCP",
+						"value": "scpdeaths"
+					},
+					{
+						"name": "Most Escapes",
+						"value": "escapes"
+					},
+					{
+						"name": "Fastest Escapes",
+						"value": "fastestescape"
+					},
+					{
+						"name": "SCP Items Used",
+						"value": "scpitems"
+					},
+					{
+						"name": "Play time",
+						"value": "playtime"
+					}
+				]
+			}
+		]
+	}
