@@ -1,0 +1,54 @@
+"choices": [
+					{
+						"name": "Points (Default)",
+						"value": "points"
+					},
+					{
+						"name": "Killed Humans",
+						"value": "humankills"
+					},
+					{
+						"name": "Killed SCPs",
+						"value": "scpkills"
+					},
+					{
+						"name": "Deaths as Human",
+						"value": "humandeaths"
+					},
+					{
+						"name": "Deaths as SCP",
+						"value": "scpdeaths"
+					},
+					{
+						"name": "Most Escapes",
+						"value": "escapes"
+					},
+					{
+						"name": "Fastest Escapes",
+						"value": "fastestescape"
+					},
+					{
+						"name": "K/D",
+						"value": "kd"
+					},
+					{
+						"name": "Shot Accuracy",
+						"value": "accuracy"
+					},
+					{
+						"name": "SCP Items Used",
+						"value": "scpitems"
+					},
+					{
+						"name": "Throwables Used",
+						"value": "throwables"
+					},
+					{
+						"name": "Healing Items Used",
+						"value": "healing"
+					},
+					{
+						"name": "Play time",
+						"value": "playtime"
+					}
+				]
