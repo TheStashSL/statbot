@@ -208,8 +208,7 @@ client.on("interactionCreate", async interaction => {
 		case "leaderboard": // leaderboard command shows top 10 player points
 			await interaction.deferReply();
 			// Get top 10 players from `Points` table
-			//option = interaction.options.get("type").value || "points";
-			option = "points";
+			option = interaction.options.get("type").value || "points";
 			try {
 				const conn = await pool.getConnection();
 				switch (option) {
