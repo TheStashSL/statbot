@@ -98,7 +98,11 @@ client.on("interactionCreate", async interaction => {
 				} else {
 					// Get points from `Points` table
 					points = await conn.query("SELECT Value FROM Points WHERE Identifier = ?", [ident]);
-					points = points[0].Value;
+					if (points.length === 0) {
+						points = 0;
+					} else {
+						points = points[0].Value;
+					}
 					// Lets get their username, identifiers are their user ID for their respective platform suffexed with either @discord or @steam to say which platform it is
 					let username = "";
 					if (rows[0].Identifier.includes("@discord")) {
@@ -182,7 +186,7 @@ client.on("interactionCreate", async interaction => {
 											inline: true
 										},
 										{
-											name: "Points",
+											name: "Total Points",
 											value: points,
 											inline: true
 										}
