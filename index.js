@@ -205,6 +205,42 @@ client.on("interactionCreate", async interaction => {
 				if (conn) conn.end();
 			}
 			break;
+		case "leaderboard": // leaderboard command shows top 10 player points
+			await interaction.deferReply();
+			// Get top 10 players from `Points` table
+			
+			try {
+				const conn = await pool.getConnection();
+				const rows = await conn.query("SELECT * FROM Points ORDER BY Value DESC LIMIT 10");
+				if (rows.length === 0) {
+					await interaction.editReply({ content: "No stats found.", ephemeral: true });
+				} else {
+					// Get their names
+					const steamClient = new steam({
+						apiKey: config.steam_api_key,
+						format: "json"
+					});
+					let names = [];
+					steamClient.getPlayerSummaries({
+						steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+						callback: async (status, data) => {
+							//console.log(data.response.players);
+							names = data.response.players.map(player => player.personaname);
+							//console.log(names);
+							const embed = {
+								color: 0x0099ff,
+								description: `## Top 10 players by points\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+								timestamp: new Date(),
+							};
+							await interaction.editReply({ embeds: [embed] });
+						}
+					})
+				}
+			} catch (err) {
+				console.log(err);
+			}
+			break;
+
 	}
 });
 
