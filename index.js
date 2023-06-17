@@ -226,6 +226,10 @@ client.on("interactionCreate", async interaction => {
 			}
 			break;
 		case "stats": // Get stats via discord user
+			// Check if they're trying to check the bot stats
+			if (interaction.options.getUser('user').id === client.user.id) {
+				return interaction.reply("What are you doing? I don't have stats!");
+			}
 			// See if the user from the interaction is in the AccountLinks table
 			let accconn;
 			await interaction.deferReply();
