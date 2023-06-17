@@ -228,6 +228,7 @@ client.on("interactionCreate", async interaction => {
 		case "stats": // Get stats via discord user
 			// See if the user from the interaction is in the AccountLinks table
 			let accconn;
+			await interaction.deferReply();
 			try {
 				accconn = await pool.getConnection();
 				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
@@ -235,7 +236,6 @@ client.on("interactionCreate", async interaction => {
 				if (!accrows) {
 					await interaction.editReply("That user hasn't linked their account yet!");
 				} else {
-					await interaction.deferReply();
 					// check if identifier has a suffix, if not assume steam
 					let ident = `${accrows.steam_id}@steam`
 					// Get stats from database
