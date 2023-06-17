@@ -429,13 +429,14 @@ client.on("interactionCreate", async interaction => {
 					} catch (err) {
 						console.log(err);
 					} finally {
-						if (accconn) accconn.end();
+						if (conn) conn.end();
 					}
 				}
 			} catch (err) {
 				console.log(err);
 			} finally {
-				if (conn) conn.end();
+				
+				if (accconn) accconn.end();
 			}
 			break;
 		case "link": // Send link account button
