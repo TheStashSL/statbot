@@ -83,6 +83,53 @@ client.on("ready", async () => {
 		}
 	})();
 
+	// Hourly #1 user in bot status
+	updateStatus = async () => {
+		// Get #1 user
+		let conn;
+		try {
+			conn = await pool.getConnection();
+			const rows = await conn.query("SELECT * FROM Points ORDER BY Value DESC LIMIT 1");
+			if (rows.length === 0) {
+				// No users found, dont do anything
+				return;
+			}
+			// Get their username
+			let username = "";
+			if (rows[0].Identifier.includes("@discord")) {
+				// Discord
+				username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).tag;
+				client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
+			} else if (rows[0].Identifier.includes("@steam")) {
+				// Steam
+				// Lets get their steam username
+				// Get steam ID
+				let steamID = rows[0].Identifier.split("@steam")[0];
+				// Get steam username
+				let steamClient = new steam({
+					apiKey: config.steam_api_key,
+					format: "json"
+				});
+				let steamUsername = await steamClient.getPlayerSummaries({
+					steamids: steamID,
+					callback: function (status, data) {
+						username = data.response.players[0].personaname;
+						console.log(`${colors.cyan("[INFO]")} Setting status to ${username} - ${rows[0].Value} points`)
+						client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
+					}
+				});
+			}
+		} catch (err) {
+			console.log(err);
+		} finally {
+			if (conn) conn.end();
+		}
+	}
+	// Run once on startup
+	await updateStatus();
+	// Run every hour
+	setInterval(updateStatus, 3600000);
+
 	// Log startup time in seconds
 	console.log(`${colors.cyan("[INFO]")} Startup took ${colors.green((Date.now() - initTime) / 1000)} seconds.`)
 });
