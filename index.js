@@ -235,6 +235,7 @@ client.on("interactionCreate", async interaction => {
 					await interaction.editReply("That user hasn't linked their account yet!");
 				} else {
 					await interaction.deferReply();
+					return interaction.editReply(JSON.stringify(accrows, null, 2));
 					// check if identifier has a suffix, if not assume steam
 					let ident = `${accrows[0].steam_id}@steam`
 					// Get stats from database
