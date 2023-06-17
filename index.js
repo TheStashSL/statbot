@@ -230,7 +230,8 @@ client.on("interactionCreate", async interaction => {
 			let accconn;
 			try {
 				accconn = await pool.getConnection();
-				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
+				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
+				console.log(accrows)
 				if (!accrows) {
 					await interaction.editReply("That user hasn't linked their account yet!");
 				} else {
