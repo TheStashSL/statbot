@@ -24,5 +24,10 @@
 				"required": true
 			}
 		]
+	},
+	{
+		"name": "link",
+		"description": "Link your Steam and Discord accounts",
+		"type": 1
 	}
 ]

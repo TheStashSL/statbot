@@ -226,6 +226,10 @@ client.on("interactionCreate", async interaction => {
 			}
 			break;
 		case "stats": // Get stats via discord user
+			// Check if they're trying to check the bot stats
+			if (interaction.options.getUser('user').id === client.user.id) {
+				return interaction.reply("What are you doing? I don't have stats!");
+			}
 			// See if the user from the interaction is in the AccountLinks table
 			let accconn;
 			await interaction.deferReply();
@@ -234,7 +238,22 @@ client.on("interactionCreate", async interaction => {
 				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
 				console.log(accrows)
 				if (!accrows) {
-					await interaction.editReply("That user hasn't linked their account yet!\nThey can link their accounts at <https://link.mydickdoesnt.work>");
+					await interaction.editReply({
+						content: "That user hasn't linked their account yet!",
+						components: [
+							{
+								type: 1,
+								components: [
+									{
+										type: 2,
+										label: "Link Account",
+										style: 5,
+										url: "https://link.mydickdoesnt.work/"
+									}
+								]
+							}
+						]
+					});
 				} else {
 					// check if identifier has a suffix, if not assume steam
 					let ident = `${accrows.steam_id}@steam`
@@ -370,6 +389,24 @@ client.on("interactionCreate", async interaction => {
 				console.log(err);
 			}
 			break;
+		case "link": // Send link account button
+			interaction.reply({
+				content: "Click the button below to link your account!",
+				components: [
+					{
+						type: 1,
+						components: [
+							{
+								type: 2,
+								label: "Link Account",
+								style: 5,
+								url: "https://link.mydickdoesnt.work/"
+							}
+						]
+					}
+				]
+			})
+			break;
 	}
 });
 
@@ -389,3 +426,5 @@ console.log(`${colors.cyan("[INFO]")} Starting...`)
 const initTime = Date.now();
 // Login to Discord
 client.login(config.discord.token);
+
+// Chris was here :)
