@@ -99,7 +99,7 @@ client.on("ready", async () => {
 			if (rows[0].Identifier.includes("@discord")) {
 				// Discord
 				username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).tag;
-				client.user.setActivity(`${username} - ${rows[0].Value} points`, { type: "WATCHING" });
+				client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
 			} else if (rows[0].Identifier.includes("@steam")) {
 				// Steam
 				// Lets get their steam username
@@ -115,12 +115,7 @@ client.on("ready", async () => {
 					callback: function (status, data) {
 						username = data.response.players[0].personaname;
 						console.log(`${colors.cyan("[INFO]")} Setting status to ${username} - ${rows[0].Value} points`)
-						client.user.setPresence({
-							activities: [{
-								name: `${username} - ${rows[0].Value} points`,
-								type: "WATCHING"
-							}]
-						})
+						client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
 					}
 				});
 			}
