@@ -238,7 +238,22 @@ client.on("interactionCreate", async interaction => {
 				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
 				console.log(accrows)
 				if (!accrows) {
-					await interaction.editReply("That user hasn't linked their account yet!\nThey can link their accounts at <https://link.mydickdoesnt.work>");
+					await interaction.editReply({
+						content: "That user hasn't linked their account yet!",
+						components: [
+							{
+								type: 1,
+								components: [
+									{
+										type: 2,
+										label: "Link Account",
+										style: 5,
+										url: "https://link.mydickdoesnt.work/"
+									}
+								]
+							}
+						]
+					});
 				} else {
 					// check if identifier has a suffix, if not assume steam
 					let ident = `${accrows.steam_id}@steam`
@@ -373,6 +388,24 @@ client.on("interactionCreate", async interaction => {
 			} catch (err) {
 				console.log(err);
 			}
+			break;
+		case "link": // Send link account button
+			interaction.reply({
+				content: "Click the button below to link your account!",
+				components: [
+					{
+						type: 1,
+						components: [
+							{
+								type: 2,
+								label: "Link Account",
+								style: 5,
+								url: "https://link.mydickdoesnt.work/"
+							}
+						]
+					}
+				]
+			})
 			break;
 	}
 });
