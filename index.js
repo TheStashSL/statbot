@@ -134,6 +134,7 @@ client.on("interactionCreate", async interaction => {
 								const embed = {
 									color: 0x0099ff,
 									title: `${username}'s Stats`,
+									description: `Points: ${points}`,
 									url: `https://steamcommunity.com/profiles/${steamID}`,
 									author: {
 										name: "SCP:SL Stats"
@@ -207,11 +208,6 @@ client.on("interactionCreate", async interaction => {
 											name: "Fastest Escape",
 											// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
 											value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
-											inline: true
-										},
-										{
-											name: "Total Points",
-											value: points,
 											inline: true
 										}
 									],
