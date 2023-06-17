@@ -134,7 +134,7 @@ client.on("interactionCreate", async interaction => {
 								const embed = {
 									color: 0x0099ff,
 									title: `${username}'s Stats`,
-									description: `# Points: ${points}`,
+									description: `## Points: ${points}`,
 									url: `https://steamcommunity.com/profiles/${steamID}`,
 									author: {
 										name: "SCP:SL Stats"
