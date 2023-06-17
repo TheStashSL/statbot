@@ -389,3 +389,5 @@ console.log(`${colors.cyan("[INFO]")} Starting...`)
 const initTime = Date.now();
 // Login to Discord
 client.login(config.discord.token);
+
+// Chris was here :)
