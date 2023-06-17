@@ -234,7 +234,7 @@ client.on("interactionCreate", async interaction => {
 				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
 				console.log(accrows)
 				if (!accrows) {
-					await interaction.editReply("That user hasn't linked their account yet!");
+					await interaction.editReply("That user hasn't linked their account yet!\nThey can link their accounts at <https://link.mydickdoesnt.work>");
 				} else {
 					// check if identifier has a suffix, if not assume steam
 					let ident = `${accrows.steam_id}@steam`
