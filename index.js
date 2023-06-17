@@ -227,9 +227,10 @@ client.on("interactionCreate", async interaction => {
 			break;
 		case "stats": // Get stats via discord user
 			// See if the user from the interaction is in the AccountLinks table
+			let accconn;
 			try {
-				conn = await pool.getConnection();
-				const [accrows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
+				accconn = await pool.getConnection();
+				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
 				if (accrows.length === 0) {
 					await interaction.editReply("That user hasn't linked their account yet!");
 				} else {
