@@ -180,14 +180,17 @@ client.on("interactionCreate", async interaction => {
 										{
 											name: "Throwables Used",
 											value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+											inline: true
 										},
 										{
 											name: "Healing Items Used",
 											value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+											inline: true
 										},
 										{
 											name: "SCP Items Used",
-											value: rows[0].ScpItemsUsed
+											value: rows[0].ScpItemsUsed,
+											inline: true
 										},
 										{
 											name: "Total Playtime",
