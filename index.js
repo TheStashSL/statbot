@@ -178,6 +178,18 @@ client.on("interactionCreate", async interaction => {
 											inline: true
 										},
 										{
+											name: "Throwables Used",
+											value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+										},
+										{
+											name: "Healing Items Used",
+											value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+										},
+										{
+											name: "SCP Items Used",
+											value: rows[0].ScpItemsUsed
+										},
+										{
 											name: "Total Playtime",
 											// get from rows.MinutesPlayed, and calculate days hours and minutes
 											value: formatTime(rows[0].MinutesPlayed),
