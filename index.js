@@ -157,7 +157,7 @@ client.on("interactionCreate", async interaction => {
 											// Cut off to the first decimal place
 											//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
 											//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
-											value: `Human K/D: ${calculateKD(rows[0].ScpKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].HumanKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+											value: `Human K/D: ${calculateKD(rows[0].HumanKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].ScpKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
 											inline: true
 										},
 										{
