@@ -438,6 +438,7 @@ client.on("interactionCreate", async interaction => {
 			break;
 		case "link": // Send link account button
 			interaction.reply({
+				ephemeral: true,
 				content: "Click the button below to link your account!",
 				components: [
 					{
