@@ -1,13 +1,26 @@
 [
 	{
-		"name": "stats",
-		"description": "Get stats for a player",
+		"name": "statsid",
+		"description": "Get stats for a player by user ID",
 		"type": 1,
 		"options": [
 			{
 				"name": "identifier",
-				"description": "User ID (Will make a better system for this later)",
+				"description": "User ID",
 				"type": 3,
+				"required": true
+			}
+		]
+	},
+	{
+		"name": "stats",
+		"description": "Get stats for a player by Discord user",
+		"type": 1,
+		"options": [
+			{
+				"name": "user",
+				"description": "Discord user",
+				"type": 6,
 				"required": true
 			}
 		]

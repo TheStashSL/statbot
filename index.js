@@ -90,7 +90,7 @@ client.on("ready", async () => {
 client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
 	switch (interaction.commandName) {
-		case "stats":
+		case "statsid":
 			await interaction.deferReply();
 			// check if identifier has a suffix, if not assume steam
 			let ident = interaction.options.getString("identifier");
@@ -223,6 +223,149 @@ client.on("interactionCreate", async interaction => {
 				console.log(err);
 			} finally {
 				if (conn) conn.end();
+			}
+			break;
+		case "stats": // Get stats via discord user
+			// See if the user from the interaction is in the AccountLinks table
+			try {
+				conn = await pool.getConnection();
+				const [accrows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
+				if (accrows.length === 0) {
+					await interaction.editReply("That user hasn't linked their account yet!");
+				} else {
+					await interaction.deferReply();
+					// check if identifier has a suffix, if not assume steam
+					let ident = `${accrows[0].steam_id}@steam`
+					// Get stats from database
+					let conn;
+					try {
+						conn = await pool.getConnection();
+						const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found for that identifier.", ephemeral: true });
+						} else {
+							// Get points from `Points` table
+							points = await conn.query("SELECT Value FROM Points WHERE Identifier = ?", [ident]);
+							if (points.length === 0) {
+								points = 0;
+							} else {
+								points = points[0].Value;
+							}
+							// Lets get their username, identifiers are their user ID for their respective platform suffexed with either @discord or @steam to say which platform it is
+							let username = "";
+							if (rows[0].Identifier.includes("@discord")) {
+								// Discord
+								username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).tag;
+								// Just gonna ignore this for now as 99.99% of players are on steam
+							} else if (rows[0].Identifier.includes("@steam")) {
+								// Steam
+								// Lets get their steam username
+								const steamClient = new steam({
+									apiKey: config.steam_api_key,
+									format: "json"
+								});
+								const steamID = rows[0].Identifier.split("@steam")[0];
+								await steamClient.getPlayerSummaries({
+									steamids: steamID,
+									callback: async (status, data) => {
+
+										username = data.response.players[0].personaname;
+										const embed = {
+											color: 0x0099ff,
+											title: `${username}'s Stats`,
+											description: `## Total Points: ${points}`,
+											url: `https://steamcommunity.com/profiles/${steamID}`,
+											author: {
+												name: "SCP:SL Stats"
+											},
+											thumbnail: {
+												url: data.response.players[0].avatarfull
+											},
+											fields: [
+												{
+													name: 'Kills',
+													value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
+													inline: true
+												},
+												{
+													name: 'Deaths',
+													value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
+													inline: true
+												},
+												{
+													name: 'K/D Ratio',
+													// Cut off to the first decimal place
+													//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+													//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+													value: `Human K/D: ${calculateKD(rows[0].HumanKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].ScpKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+													inline: true
+												},
+												{
+													name: 'Total Shots Fired',
+													value: `${rows[0].ShotsFired}`,
+													inline: true
+												},
+												{
+													name: 'Total Hits',
+													value: `${rows[0].ShotsHit}`,
+													inline: true
+												},
+												{
+													name: 'Accuracy',
+													// Cut off to the first decimal place
+													//value: `${(rows[0].ShotsHit / rows[0].ShotsFired) * 100}%`,
+													value: `${((rows[0].ShotsHit / rows[0].ShotsFired) * 100).toFixed(1)}%`,
+													inline: true
+												},
+												{
+													name: "Throwables Used",
+													value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+													inline: true
+												},
+												{
+													name: "Healing Items Used",
+													value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+													inline: true
+												},
+												{
+													name: "SCP Items Used",
+													value: rows[0].ScpItemsUsed,
+													inline: true
+												},
+												{
+													name: "Total Playtime",
+													// get from rows.MinutesPlayed, and calculate days hours and minutes
+													value: formatTime(rows[0].MinutesPlayed),
+													inline: true
+												},
+												{
+													name: "Total Escapes",
+													value: `${rows[0].TimesEscaped}`,
+													inline: true
+												},
+												{
+													name: "Fastest Escape",
+													// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
+													value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+													inline: true
+												}
+											],
+											timestamp: new Date(),
+										};
+										await interaction.editReply({ embeds: [embed] });
+									}
+								});
+							}
+
+						}
+					} catch (err) {
+						console.log(err);
+					} finally {
+						if (conn) conn.end();
+					}
+				}
+			} catch (err) {
+				console.log(err);
 			}
 			break;
 	}
