@@ -135,7 +135,7 @@ client.on("ready", async () => {
 });
 
 client.on('messageCreate', async message => {
-	if(message.author.bot) return;
+	if (message.author.bot) return;
 	// see if its between may 31st at 4am utc and may 32nd and 4am utc
 	const start = new Date("2024-05-31T04:00:00.000Z");
 	const end = new Date("2024-06-1T04:00:00.000Z");
@@ -688,6 +688,33 @@ client.on("interactionCreate", async interaction => {
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItemsUsed}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "healingitems":
+						rows = await conn.query("SELECT *, (MedkitsUsed + AdrenalinesUsed + PainkillersUsed) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most healing items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
 										timestamp: new Date(),
 									};
 									await interaction.editReply({ embeds: [embed] });

@@ -74,6 +74,10 @@
 						"value": "scpitems"
 					},
 					{
+						"name": "Healing Items Used",
+						"value": "healingitems"
+					},
+					{
 						"name": "Play time",
 						"value": "playtime"
 					}
