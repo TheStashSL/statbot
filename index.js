@@ -136,6 +136,13 @@ client.on("ready", async () => {
 
 client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
+	let conn;
+	try {
+		conn = await pool.getConnection();
+	} catch (err) {
+		console.log(err);
+		return;
+	}
 	switch (interaction.commandName) {
 		case "statsid":
 			await interaction.deferReply();
@@ -145,9 +152,7 @@ client.on("interactionCreate", async interaction => {
 				ident += "@steam";
 			}
 			// Get stats from database
-			let conn;
 			try {
-				conn = await pool.getConnection();
 				const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
 				if (rows.length === 0) {
 					await interaction.editReply({ content: "No stats found for that identifier.", ephemeral: true });
@@ -278,11 +283,9 @@ client.on("interactionCreate", async interaction => {
 				return interaction.reply("What are you doing? I don't have stats!");
 			}
 			// See if the user from the interaction is in the AccountLinks table
-			let accconn;
 			await interaction.deferReply();
 			try {
-				accconn = await pool.getConnection();
-				const [accrows] = await accconn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
+				const [accrows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
 				console.log(accrows)
 				if (!accrows) {
 					await interaction.editReply({
@@ -305,7 +308,6 @@ client.on("interactionCreate", async interaction => {
 					// check if identifier has a suffix, if not assume steam
 					let ident = `${accrows.steam_id}@steam`
 					// Get stats from database
-					let conn;
 					try {
 						conn = await pool.getConnection();
 						const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
@@ -435,8 +437,8 @@ client.on("interactionCreate", async interaction => {
 			} catch (err) {
 				console.log(err);
 			} finally {
-				
-				if (accconn) accconn.end();
+
+				if (conn) conn.end();
 			}
 			break;
 		case "link": // Send link account button
@@ -457,6 +459,264 @@ client.on("interactionCreate", async interaction => {
 					}
 				]
 			})
+			break;
+
+		case "leaderboard": // Leaderboard command
+			await interaction.deferReply();
+			option = interaction.options.getString("type") || "points";
+			try {
+
+				switch (option) {
+					case "points":
+						rows = await conn.query("SELECT * FROM Points ORDER BY Value DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by points\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "humankills":
+						rows = await conn.query("SELECT * FROM Stats ORDER BY HumanKills DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by humans killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HumanKills}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "scpkills":
+						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpKills DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by SCPs killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpKills}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "humandeaths": // Most deaths as human
+						rows = await conn.query("SELECT * FROM Stats ORDER BY HumanDeaths DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by deaths as a human\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HumanDeaths}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "scpdeaths": // Most deaths as human
+						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpDeaths DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by deaths as an SCP\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpDeaths}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "escapes":
+						rows = await conn.query("SELECT * FROM Stats ORDER BY TimesEscaped ASC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.TimesEscaped}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "fastestescape":
+						rows = await conn.query("SELECT * FROM Stats ORDER BY FastestEscape ASC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatSeconds(row.FastestEscape)}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "scpitems":
+						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpItemsUsed DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItemsUsed}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "playtime":
+						rows = await conn.query("SELECT * FROM Stats ORDER BY MinutesPlayed DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = data.response.players.map(player => player.personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most time played\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatTime(row.MinutesPlayed)}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+				}
+			} catch {
+				await interaction.editReply({ content: "An error occured.", ephemeral: true });
+			} finally {
+				await conn.end();
+			}
+
 			break;
 	}
 });

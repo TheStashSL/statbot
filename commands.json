@@ -29,5 +29,56 @@
 		"name": "link",
 		"description": "Link your Steam and Discord accounts",
 		"type": 1
+	},
+	{
+		"name": "leaderboard",
+		"description": "Show the top 10 players",
+		"type": 1,
+		"options": [
+			{
+				"name": "type",
+				"description": "Type of leaderboard",
+				"type": 3,
+				"required": false,
+				"choices": [
+					{
+						"name": "Points (Default)",
+						"value": "points"
+					},
+					{
+						"name": "Killed Humans",
+						"value": "humankills"
+					},
+					{
+						"name": "Killed SCPs",
+						"value": "scpkills"
+					},
+					{
+						"name": "Deaths as Human",
+						"value": "humandeaths"
+					},
+					{
+						"name": "Deaths as SCP",
+						"value": "scpdeaths"
+					},
+					{
+						"name": "Most Escapes",
+						"value": "escapes"
+					},
+					{
+						"name": "Fastest Escapes",
+						"value": "fastestescape"
+					},
+					{
+						"name": "SCP Items Used",
+						"value": "scpitems"
+					},
+					{
+						"name": "Play time",
+						"value": "playtime"
+					}
+				]
+			}
+		]
 	}
 ]
