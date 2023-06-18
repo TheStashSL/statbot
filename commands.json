@@ -62,6 +62,10 @@
 						"value": "scpdeaths"
 					},
 					{
+						"name": "Throwables Used",
+						"value": "throwables"
+					},
+					{
 						"name": "Most Escapes",
 						"value": "escapes"
 					},
@@ -72,6 +76,10 @@
 					{
 						"name": "SCP Items Used",
 						"value": "scpitems"
+					},
+					{
+						"name": "Healing Items Used",
+						"value": "healingitems"
 					},
 					{
 						"name": "Play time",
