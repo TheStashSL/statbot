@@ -482,7 +482,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -509,7 +509,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -536,7 +536,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -563,7 +563,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -590,7 +590,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -617,7 +617,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -644,7 +644,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -671,7 +671,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
@@ -698,7 +698,7 @@ client.on("interactionCreate", async interaction => {
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
 									//console.log(data.response.players);
-									names = data.response.players.map(player => player.personaname);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
