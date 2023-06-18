@@ -152,7 +152,9 @@ client.on("interactionCreate", async interaction => {
 	try {
 		conn = await pool.getConnection();
 	} catch (err) {
-		console.log(err);
+		console.log(`${colors.red("[ERROR]")} Error getting database connection: ${err}`);
+		await interaction.reply({ content: "Error getting database connection. Please Try Again!", ephemeral: true });
+		conn.destroy();
 		return;
 	}
 	switch (interaction.commandName) {
@@ -321,7 +323,6 @@ client.on("interactionCreate", async interaction => {
 					let ident = `${accrows.steam_id}@steam`
 					// Get stats from database
 					try {
-						conn = await pool.getConnection();
 						const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found for that identifier.", ephemeral: true });
