@@ -8,7 +8,7 @@ const pool = mariadb.createPool(config.database);
 
 // Initialize Discord.js
 const Discord = require("discord.js");
-const client = new Discord.Client({ intents: ["Guilds"] });
+const client = new Discord.Client({ intents: ["Guilds", "GuildMessages"] });
 const rest = new Discord.REST({
 	version: '10'
 }).setToken(config.discord.token);
@@ -133,6 +133,18 @@ client.on("ready", async () => {
 	// Log startup time in seconds
 	console.log(`${colors.cyan("[INFO]")} Startup took ${colors.green((Date.now() - initTime) / 1000)} seconds.`)
 });
+
+client.on('messageCreate', async message => {
+	if(message.author.bot) return;
+	// see if its between may 31st at 4am utc and may 32nd and 4am utc
+	const start = new Date("2024-05-31T04:00:00.000Z");
+	const end = new Date("2024-06-1T04:00:00.000Z");
+	const now = new Date();
+	if (now > start && now < end) {
+		// fish react this man
+		message.react("🐟");
+	}
+})
 
 client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
