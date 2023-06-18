@@ -722,6 +722,33 @@ client.on("interactionCreate", async interaction => {
 							})
 						}
 						break;
+					case "throwables":
+						rows = await conn.query("SELECT *, (FlashbangsThrown + HeGrenadesThrown + Scp018sThrown + GhostLightsThrown) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most throwable items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
 					case "playtime":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY MinutesPlayed DESC LIMIT 10");
 						if (rows.length === 0) {
