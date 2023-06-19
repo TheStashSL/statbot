@@ -140,7 +140,7 @@ client.on('messageCreate', async message => {
 	const start = new Date("2024-05-31T04:00:00.000Z");
 	const end = new Date("2024-06-1T04:00:00.000Z");
 	const now = new Date();
-	if (now > start && now < end) {
+	if ((now > start && now < end) || config.fish_react_this_man) {
 		// fish react this man
 		message.react("🐟");
 	}
