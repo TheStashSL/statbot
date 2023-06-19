@@ -62,6 +62,10 @@
 						"value": "scpdeaths"
 					},
 					{
+						"name": "K/D Ratio",
+						"value": "kd"
+					},
+					{
 						"name": "Throwables Used",
 						"value": "throwables"
 					},

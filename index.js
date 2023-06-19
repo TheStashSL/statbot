@@ -614,6 +614,33 @@ client.on("interactionCreate", async interaction => {
 							})
 						}
 						break;
+						case "kd":
+						rows = await conn.query("SELECT *, ( CASE WHEN ((HumanDeaths + ScpDeaths) = 0) THEN (HumanKills + ScpKills) ELSE (HumanKills + ScpKills)/(HumanDeaths + ScpDeaths) END ) AS Total FROM playerstats.Stats ORDER BY Total DESC LIMIT 10;");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
 					case "escapes":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY TimesEscaped ASC LIMIT 10");
 						if (rows.length === 0) {
