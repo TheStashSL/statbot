@@ -140,7 +140,7 @@ client.on('messageCreate', async message => {
 	const start = new Date("2024-05-31T04:00:00.000Z");
 	const end = new Date("2024-06-1T04:00:00.000Z");
 	const now = new Date();
-	if (now > start && now < end) {
+	if ((now > start && now < end) || config.fish_react_this_man) {
 		// fish react this man
 		message.react("🐟");
 	}
@@ -608,6 +608,33 @@ client.on("interactionCreate", async interaction => {
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by deaths as an SCP\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpDeaths}`).join("\n")}`,
+										timestamp: new Date(),
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+					case "kd":
+						rows = await conn.query("SELECT *, ( CASE WHEN ((HumanDeaths + ScpDeaths) = 0) THEN (HumanKills + ScpKills) ELSE (HumanKills + ScpKills)/(HumanDeaths + ScpDeaths) END ) AS KD FROM Stats ORDER BY KD DESC LIMIT 10;");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.KD).toFixed(1)}`).join("\n")}`,
 										timestamp: new Date(),
 									};
 									await interaction.editReply({ embeds: [embed] });
