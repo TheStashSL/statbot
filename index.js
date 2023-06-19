@@ -633,7 +633,7 @@ client.on("interactionCreate", async interaction => {
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.KD}`).join("\n")}`,
+										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.KD.toFixed(1)}`).join("\n")}`,
 										timestamp: new Date(),
 									};
 									await interaction.editReply({ embeds: [embed] });
