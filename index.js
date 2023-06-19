@@ -614,8 +614,8 @@ client.on("interactionCreate", async interaction => {
 							})
 						}
 						break;
-						case "kd":
-						rows = await conn.query("SELECT *, ( CASE WHEN ((HumanDeaths + ScpDeaths) = 0) THEN (HumanKills + ScpKills) ELSE (HumanKills + ScpKills)/(HumanDeaths + ScpDeaths) END ) AS Total FROM playerstats.Stats ORDER BY Total DESC LIMIT 10;");
+					case "kd":
+						rows = await conn.query("SELECT *, ( CASE WHEN ((HumanDeaths + ScpDeaths) = 0) THEN (HumanKills + ScpKills) ELSE (HumanKills + ScpKills)/(HumanDeaths + ScpDeaths) END ) AS KD FROM Stats ORDER BY KD DESC LIMIT 10;");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
@@ -633,7 +633,7 @@ client.on("interactionCreate", async interaction => {
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
+										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.KD}`).join("\n")}`,
 										timestamp: new Date(),
 									};
 									await interaction.editReply({ embeds: [embed] });
