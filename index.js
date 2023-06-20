@@ -879,7 +879,7 @@ client.on("interactionCreate", async interaction => {
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by best shot accuraccy\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(0)}%`).join("\n")}`,
+										description: `## Top 10 players by best shot accuraccy\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
 											// Random quote
