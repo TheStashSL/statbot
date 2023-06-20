@@ -2,6 +2,7 @@ const config = require("./config.json");
 const colors = require("colors");
 const axios = require("axios");
 const steam = require("steam-web");
+const fs = require("fs");
 // Initialize mariadb connection
 const mariadb = require("mariadb");
 const pool = mariadb.createPool(config.database);
