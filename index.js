@@ -361,7 +361,7 @@ client.on("interactionCreate", async interaction => {
 								await steamClient.getPlayerSummaries({
 									steamids: steamID,
 									callback: async (status, data) => {
-										console.log(data)
+										console.log(`Status: ${status}`)
 										username = data.response.players[0].personaname;
 										const embed = {
 											color: 0x0099ff,
