@@ -862,9 +862,6 @@ client.on("interactionCreate", async interaction => {
 							})
 						}
 						break;
-					case "tip": // Get a random tip (quotes)
-						await interaction.editReply({ content: quotes[Math.floor(Math.random() * quotes.length)], });
-						break;
 				}
 			} catch {
 				await interaction.editReply({ content: "An error occured.", ephemeral: true });
@@ -872,6 +869,9 @@ client.on("interactionCreate", async interaction => {
 				await conn.end();
 			}
 
+			break;
+		case "tip": // Get a random tip (quotes)
+			await interaction.editReply({ content: quotes[Math.floor(Math.random() * quotes.length)], });
 			break;
 	}
 });
