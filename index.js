@@ -202,7 +202,10 @@ client.on("interactionCreate", async interaction => {
 						await steamClient.getPlayerSummaries({
 							steamids: steamID,
 							callback: async (status, data) => {
-
+								if (!data.response) {
+									interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+									throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+								}
 								username = data.response.players[0].personaname;
 								const embed = {
 									color: 0x0099ff,
@@ -361,7 +364,10 @@ client.on("interactionCreate", async interaction => {
 								await steamClient.getPlayerSummaries({
 									steamids: steamID,
 									callback: async (status, data) => {
-										console.log(`Status: ${status}`)
+										if (!data.response) {
+											interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+											throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										}
 										username = data.response.players[0].personaname;
 										const embed = {
 											color: 0x0099ff,
@@ -506,6 +512,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -537,6 +547,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -568,6 +582,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -599,6 +617,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -630,6 +652,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -661,6 +687,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -692,6 +722,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -723,6 +757,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -754,6 +792,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -785,6 +827,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -816,6 +862,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -847,6 +897,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
@@ -878,6 +932,10 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
