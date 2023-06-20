@@ -861,7 +861,7 @@ client.on("interactionCreate", async interaction => {
 						}
 						break;
 					case "accuracy": // Get top 10 players by accuracy ((ShotsHit / r.ShotsFired) * 100)
-						rows = await conn.query("SELECT *, (ShotsHit / ShotsFired) * 100 AS Accuracy FROM Stats ORDER BY Accuracy DESC LIMIT 10");
+						rows = await conn.query("SELECT *, (ShotsHit / ShotsFired) * 100 AS Accuracy FROM playerstats.Stats WHERE ShotsFired > 500 ORDER BY Accuracy DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
@@ -879,7 +879,7 @@ client.on("interactionCreate", async interaction => {
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by best shot accuraccy\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
+										description: `## Top 10 players by best shot accuraccy\n### **Only players with over 500 fired rounds will appear here!**\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
 											// Random quote
