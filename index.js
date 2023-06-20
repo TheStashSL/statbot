@@ -2,6 +2,7 @@ const config = require("./config.json");
 const colors = require("colors");
 const axios = require("axios");
 const steam = require("steam-web");
+const fs = require("fs");
 // Initialize mariadb connection
 const mariadb = require("mariadb");
 const pool = mariadb.createPool(config.database);
@@ -148,6 +149,8 @@ client.on('messageCreate', async message => {
 
 client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
+	//Load latest quotes.txt, separated by newlines
+	let quotes = fs.readFileSync("./quotes.txt", "utf-8").split("\n");
 	let conn;
 	try {
 		conn = await pool.getConnection();
@@ -278,6 +281,10 @@ client.on("interactionCreate", async interaction => {
 										}
 									],
 									timestamp: new Date(),
+									footer: {
+										// Random quote
+										text: quotes[Math.floor(Math.random() * quotes.length)]
+									}
 								};
 								await interaction.editReply({ embeds: [embed] });
 							}
@@ -434,6 +441,10 @@ client.on("interactionCreate", async interaction => {
 												}
 											],
 											timestamp: new Date(),
+											footer: {
+												// Random quote
+												text: quotes[Math.floor(Math.random() * quotes.length)]
+											}
 										};
 										await interaction.editReply({ embeds: [embed] });
 									}
@@ -501,6 +512,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by points\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -528,6 +543,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by humans killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HumanKills}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -555,6 +574,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by SCPs killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpKills}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -582,6 +605,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by deaths as a human\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HumanDeaths}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -609,6 +636,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by deaths as an SCP\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpDeaths}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -636,6 +667,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.KD).toFixed(1)}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -663,6 +698,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by most escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.TimesEscaped}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -690,6 +729,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by most escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatSeconds(row.FastestEscape)}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -717,6 +760,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItemsUsed}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -744,6 +791,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by most healing items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -771,6 +822,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by most throwable items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
@@ -798,6 +853,10 @@ client.on("interactionCreate", async interaction => {
 										color: 0x0099ff,
 										description: `## Top 10 players by most time played\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatTime(row.MinutesPlayed)}`).join("\n")}`,
 										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								}
