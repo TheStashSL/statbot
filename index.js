@@ -80,7 +80,8 @@ client.on("ready", async () => {
 			);
 			console.log(`${colors.cyan("[INFO]")} Successfully registered commands. Took ${colors.green((Date.now() - start) / 1000)} seconds.`);
 		} catch (error) {
-			console.error(error);
+			// throw error with line number
+			throw new Error(error.stack);
 		}
 	})();
 
@@ -121,7 +122,7 @@ client.on("ready", async () => {
 				});
 			}
 		} catch (err) {
-			console.log(err);
+			throw new Error(err.stack);
 		} finally {
 			if (conn) conn.end();
 		}
@@ -296,7 +297,7 @@ client.on("interactionCreate", async interaction => {
 
 				}
 			} catch (err) {
-				console.log(err);
+				throw new Error(err.stack);
 			} finally {
 				if (conn) conn.end();
 			}
@@ -896,8 +897,9 @@ client.on("interactionCreate", async interaction => {
 						break;
 
 				}
-			} catch {
+			} catch (err) {
 				await interaction.editReply({ content: "An error occured.", ephemeral: true });
+				throw new Error(err.stack);
 			} finally {
 				await conn.end();
 			}
@@ -919,6 +921,41 @@ process.on('SIGINT', async () => {
 	await client.destroy();
 	await console.log(`${colors.cyan("[INFO]")} Goodbye!`);
 	process.exit(0);
+});
+const error_webhook = new Discord.WebhookClient({ url: config.error_webhook });
+// Catch-All error handler, I'm lazy
+
+process.on('uncaughtException', async (err) => {
+	await console.log(`${colors.red("[ERROR]")} Uncaught Exception: ${err}`);
+	// Hit the webhook with the error
+	await error_webhook.send({
+		embeds: [{
+			title: "Uncaught Exception",
+			description: `\`\`\`${err}\`\`\``,
+			color: 0xff0000,
+			timestamp: new Date(),
+			footer: {
+				text: "I shat myself ;-;"
+			}
+		}]
+	});
+
+});
+
+process.on('unhandledRejection', async (err) => {
+	await console.log(`${colors.red("[ERROR]")} Unhandled Rejection: ${err}`);
+	// Hit the webhook
+	await error_webhook.send({
+		embeds: [{
+			title: "Unhandled Rejection",
+			description: `\`\`\`${err}\`\`\``,
+			color: 0xff0000,
+			timestamp: new Date(),
+			footer: {
+				text: "I shat myself ;-;"
+			}
+		}]
+	})
 });
 
 console.log(`${colors.cyan("[INFO]")} Starting...`)
