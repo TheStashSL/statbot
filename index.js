@@ -149,6 +149,7 @@ client.on('messageCreate', async message => {
 
 client.on("interactionCreate", async interaction => {
 	if (!interaction.isCommand()) return;
+	await interaction.deferReply();
 	//Load latest quotes.txt, separated by newlines
 	let quotes = fs.readFileSync("./quotes.txt", "utf-8").split("\n");
 	let conn;
@@ -162,7 +163,6 @@ client.on("interactionCreate", async interaction => {
 	}
 	switch (interaction.commandName) {
 		case "statsid":
-			await interaction.deferReply();
 			// check if identifier has a suffix, if not assume steam
 			let ident = interaction.options.getString("identifier");
 			if (!ident.includes("@")) {
@@ -304,7 +304,6 @@ client.on("interactionCreate", async interaction => {
 				return interaction.reply("What are you doing? I don't have stats!");
 			}
 			// See if the user from the interaction is in the AccountLinks table
-			await interaction.deferReply();
 			try {
 				const [accrows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.options.getUser('user').id]);
 				console.log(accrows)
@@ -485,7 +484,6 @@ client.on("interactionCreate", async interaction => {
 			break;
 
 		case "leaderboard": // Leaderboard command
-			await interaction.deferReply();
 			option = interaction.options.getString("type") || "points";
 			try {
 
