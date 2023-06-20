@@ -66,6 +66,10 @@
 						"value": "kd"
 					},
 					{
+						"name": "Accuracy",
+						"value": "accuracy"
+					},
+					{
 						"name": "Throwables Used",
 						"value": "throwables"
 					},
