@@ -861,6 +861,38 @@ client.on("interactionCreate", async interaction => {
 							})
 						}
 						break;
+					case "accuracy": // Get top 10 players by accuracy ((ShotsHit / r.ShotsFired) * 100)
+						rows = await conn.query("SELECT *, (ShotsHit / ShotsFired) * 100 AS Accuracy FROM Stats ORDER BY Accuracy DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by best shot accuraccy\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
+										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
+									};
+									await interaction.editReply({ embeds: [embed] });
+								}
+							})
+						}
+						break;
+						
 				}
 			} catch {
 				await interaction.editReply({ content: "An error occured.", ephemeral: true });
