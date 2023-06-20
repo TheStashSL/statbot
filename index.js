@@ -152,14 +152,17 @@ client.on("interactionCreate", async interaction => {
 	await interaction.deferReply();
 	//Load latest quotes.txt, separated by newlines
 	let quotes = fs.readFileSync("./quotes.txt", "utf-8").split("\n");
+	let connConn = false;
 	let conn;
-	try {
-		conn = await pool.getConnection();
-	} catch (err) {
-		console.log(`${colors.red("[ERROR]")} Error getting database connection: ${err}`);
-		await interaction.reply({ content: "Error getting database connection. Please Try Again!", ephemeral: true });
-		conn.destroy();
-		return;
+	while (!connConn) { // Loop until we get a connection, I'm too lazy to do it properly, if there even is a proper way
+		try {
+			conn = await pool.getConnection();
+		} catch (err) {
+			console.log(`${colors.red("[ERROR]")} Error getting database connection: ${err}`);
+			await conn.destroy();
+			return;
+		}
+		connConn = true;
 	}
 	switch (interaction.commandName) {
 		case "statsid":
@@ -891,7 +894,7 @@ client.on("interactionCreate", async interaction => {
 							})
 						}
 						break;
-						
+
 				}
 			} catch {
 				await interaction.editReply({ content: "An error occured.", ephemeral: true });
@@ -904,6 +907,7 @@ client.on("interactionCreate", async interaction => {
 			await interaction.editReply({ content: quotes[Math.floor(Math.random() * quotes.length)], });
 			break;
 	}
+	if (conn) await conn.end();
 });
 
 process.on('SIGINT', async () => {
