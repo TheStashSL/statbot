@@ -92,5 +92,10 @@
 				]
 			}
 		]
+	},
+	{
+		"name": "tip",
+		"description": "Get a random tip",
+		"type": 1
 	}
 ]
