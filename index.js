@@ -976,7 +976,7 @@ client.on("interactionCreate", async interaction => {
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by most kills as zombie\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.KillsAsZombie).toFixed(1)}%`).join("\n")}`,
+										description: `## Top 10 players by most kills as zombie\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.KillsAsZombie}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
 											// Random quote
