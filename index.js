@@ -261,12 +261,12 @@ client.on("interactionCreate", async interaction => {
 										},
 										{
 											name: "Healing Items Used",
-											value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+											value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed + rows[0].Scp500SUsed}`,
 											inline: true
 										},
 										{
 											name: "SCP Items Used",
-											value: rows[0].ScpItemsUsed,
+											value: rows[0].ScpItemsUsed + rows[0].Scp500SUsed,
 											inline: true
 										},
 										{
@@ -779,7 +779,7 @@ client.on("interactionCreate", async interaction => {
 						}
 						break;
 					case "scpitems":
-						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpItemsUsed DESC LIMIT 10");
+						rows = await conn.query("SELECT *, (ScpItemsUsed + Scp500SUsed) AS Total FROM Stats ORDER BY ScpItems DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
@@ -801,7 +801,7 @@ client.on("interactionCreate", async interaction => {
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItemsUsed}`).join("\n")}`,
+										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItems}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
 											// Random quote
@@ -814,7 +814,7 @@ client.on("interactionCreate", async interaction => {
 						}
 						break;
 					case "healingitems":
-						rows = await conn.query("SELECT *, (MedkitsUsed + AdrenalinesUsed + PainkillersUsed) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
+						rows = await conn.query("SELECT *, (MedkitsUsed + AdrenalinesUsed + PainkillersUsed + Scp500SUsed) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
@@ -942,6 +942,41 @@ client.on("interactionCreate", async interaction => {
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by best shot accuraccy\n### **Only players with over 500 fired rounds will appear here!**\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
+										timestamp: new Date(),
+										footer: {
+											// Random quote
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
+									};
+									await interaction.editReply({ embeds: [embed] });
+								},
+							})
+						}
+						break;
+					case "zombiekills": // Get top 10 players by zombie kills
+						rows = await conn.query("SELECT * FROM Stats ORDER BY KillsAsZombie DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
+							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+							let names = [];
+							steamClient.getPlayerSummaries({
+								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									}
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									//console.log(names);
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by most kills as zombie\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.KillsAsZombie).toFixed(1)}%`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
 											// Random quote
