@@ -965,18 +965,33 @@ client.on("interactionCreate", async interaction => {
 							});
 							let names = [];
 
+							const steamids = rows.map(row => {
+								const identifier = row.Identifier.split("@")[0]; // Get the first part of the identifier
+								if (row.Identifier.endsWith("@northwood")) {
+									return identifier; // Use the first half of the identifier directly
+								} else {
+									return identifier + "@steam"; // Use the identifier for Steam API lookup
+								}
+							});
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids,
 								callback: async (status, data) => {
 									// Steam users
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									console.log(rows.map(row => row.Identifier.split("@northwood")[0]))
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map(row => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return row.Identifier.split("@")[0]; // Use the first half of the identifier directly
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by most kills as zombie\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.KillsAsZombie}`).join("\n")}`,
@@ -988,8 +1003,9 @@ client.on("interactionCreate", async interaction => {
 									};
 									await interaction.editReply({ embeds: [embed] });
 								},
-							})
+							});
 						}
+
 						break;
 
 				}
