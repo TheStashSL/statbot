@@ -85,7 +85,7 @@ client.on("ready", async () => {
 		}
 	})();
 
-	// Hourly #1 user in bot status
+	// every 5 mins #1 user in bot status
 	updateStatus = async () => {
 		// Get #1 user
 		let conn;
@@ -118,8 +118,8 @@ client.on("ready", async () => {
 					steamids: steamID,
 					callback: function (status, data) {
 						username = data.response.players[0].personaname;
-						console.log(`${colors.cyan("[INFO]")} Setting status to ${username} - ${rows[0].Value} points`)
-						client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
+						console.log(`${colors.cyan("[INFO]")} Setting status to ${username}, most points, with ${rows[0].Value} points`);
+						client.user.setPresence({ activities: [{ name: `${username}, most points, with ${rows[0].Value} points`, type: 3 }], status: "online" });
 					}
 				});
 			} else if (rows[0].Identifier.includes("@northwood")) {
@@ -135,8 +135,8 @@ client.on("ready", async () => {
 	}
 	// Run once on startup
 	await updateStatus();
-	// Run every hour
-	setInterval(updateStatus, 3600000);
+	// Run every 5 mins
+	setInterval(updateStatus, 300000);
 
 	// Log startup time in seconds
 	console.log(`${colors.cyan("[INFO]")} Startup took ${colors.green((Date.now() - initTime) / 1000)} seconds.`)
@@ -658,6 +658,7 @@ client.on("interactionCreate", async interaction => {
 			break;
 		case "link": // Send link account button
 			interaction.reply({
+				ephemeral: true,
 				content: "Click the button below to link your account!",
 				components: [
 					{
