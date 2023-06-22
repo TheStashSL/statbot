@@ -970,14 +970,14 @@ client.on("interactionCreate", async interaction => {
 							// seperate the steam and northwood identifiers in an object, key is the rank, value is the identifier
 							steamIdentifiers = {};
 							northwoodIdentifiers = {};
-							identifiers.forEach(identifier => {
-								if(identifier.split("@northwood")[1] === "@northwood") {
-									northwoodIdentifiers[identifiers.indexOf(identifier)] = identifier;
+							identifiers.forEach(id1 => {
+								if(id1.split("@northwood")[1] === "@northwood") {
+									northwoodIdentifiers[identifiers.indexOf(id1)] = id1;
 								} else {
-									steamIdentifiers[identifiers.indexOf(identifier)] = identifier;
+									steamIdentifiers[identifiers.indexOf(id1)] = id1;
 								}
 							});
-							
+
 
 							console.log(steamIdentifiers);
 							console.log(northwoodIdentifiers);
