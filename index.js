@@ -100,8 +100,10 @@ client.on("ready", async () => {
 			let username = "";
 			if (rows[0].Identifier.includes("@discord")) {
 				// Discord
-				username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).tag;
-				client.user.setPresence({ activities: [{ name: `${username}, most points, with ${rows[0].Value} points`, type: 3 }], status: "online" });
+				client.users.fetch(rows[0].Identifier.split("@discord")[0]).then(user => {
+					username = user.username;
+					client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
+				});
 			} else if (rows[0].Identifier.includes("@steam")) {
 				// Steam
 				// Lets get their steam username
@@ -120,6 +122,10 @@ client.on("ready", async () => {
 						client.user.setPresence({ activities: [{ name: `${username}, most points, with ${rows[0].Value} points`, type: 3 }], status: "online" });
 					}
 				});
+			} else if (rows[0].Identifier.includes("@northwood")) {
+				// Northwood
+				username = rows[0].Identifier; // Just use their northwood username
+				client.user.setPresence({ activities: [{ name: `${username} - ${rows[0].Value} points`, type: 3 }], status: "online" });
 			}
 		} catch (err) {
 			throw new Error(err.stack);
@@ -189,8 +195,94 @@ client.on("interactionCreate", async interaction => {
 					let username = "";
 					if (rows[0].Identifier.includes("@discord")) {
 						// Discord
-						username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).tag;
-						// Just gonna ignore this for now as 99.99% of players are on steam
+						username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).username;
+						avatar = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).displayAvatarURL();
+						const embed = {
+							color: 0x0099ff,
+							title: `${username}'s Stats`,
+							description: `## Total Points: ${points}`,
+							author: {
+								name: "SCP:SL Stats"
+							},
+							thumbnail: {
+								url: avatar
+							},
+							fields: [
+								{
+									name: 'Kills',
+									value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
+									inline: true
+								},
+								{
+									name: 'Deaths',
+									value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
+									inline: true
+								},
+								{
+									name: 'K/D Ratio',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+									value: `Human K/D: ${calculateKD(rows[0].HumanKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].ScpKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									inline: true
+								},
+								{
+									name: 'Total Shots Fired',
+									value: `${rows[0].ShotsFired}`,
+									inline: true
+								},
+								{
+									name: 'Total Hits',
+									value: `${rows[0].ShotsHit}`,
+									inline: true
+								},
+								{
+									name: 'Accuracy',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ShotsHit / rows[0].ShotsFired) * 100}%`,
+									value: `${((rows[0].ShotsHit / rows[0].ShotsFired) * 100).toFixed(1)}%`,
+									inline: true
+								},
+								{
+									name: "Throwables Used",
+									value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+									inline: true
+								},
+								{
+									name: "Healing Items Used",
+									value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed + rows[0].Scp500SUsed}`,
+									inline: true
+								},
+								{
+									name: "SCP Items Used",
+									value: rows[0].ScpItemsUsed + rows[0].Scp500SUsed,
+									inline: true
+								},
+								{
+									name: "Total Playtime",
+									// get from rows.MinutesPlayed, and calculate days hours and minutes
+									value: formatTime(rows[0].MinutesPlayed),
+									inline: true
+								},
+								{
+									name: "Total Escapes",
+									value: `${rows[0].TimesEscaped}`,
+									inline: true
+								},
+								{
+									name: "Fastest Escape",
+									// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
+									value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+									inline: true
+								}
+							],
+							timestamp: new Date(),
+							footer: {
+								// Random quote
+								text: quotes[Math.floor(Math.random() * quotes.length)]
+							}
+						};
+						await interaction.editReply({ embeds: [embed] });
 					} else if (rows[0].Identifier.includes("@steam")) {
 						// Steam
 						// Lets get their steam username
@@ -203,7 +295,7 @@ client.on("interactionCreate", async interaction => {
 							steamids: steamID,
 							callback: async (status, data) => {
 								if (!data.response) {
-									interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+									interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
 									throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
 								}
 								username = data.response.players[0].personaname;
@@ -261,12 +353,12 @@ client.on("interactionCreate", async interaction => {
 										},
 										{
 											name: "Healing Items Used",
-											value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+											value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed + rows[0].Scp500SUsed}`,
 											inline: true
 										},
 										{
 											name: "SCP Items Used",
-											value: rows[0].ScpItemsUsed,
+											value: rows[0].ScpItemsUsed + rows[0].Scp500SUsed,
 											inline: true
 										},
 										{
@@ -296,8 +388,98 @@ client.on("interactionCreate", async interaction => {
 								await interaction.editReply({ embeds: [embed] });
 							}
 						});
+					} else if (rows[0].Identifier.includes("@northwood")) {
+						// Separate the username from the identifier
+						const username = rows[0].Identifier.split("@northwood")[0];
+						// avatar needs to be the file at static/northwood-staff.jpg
+						const attachment = new Discord.AttachmentBuilder("./static/northwood-staff.jpg");
+						const embed = {
+							color: 0x0099ff,
+							title: `${username}'s Stats`,
+							description: `## Total Points: ${points}`,
+							author: {
+								name: "SCP:SL Stats"
+							},
+							thumbnail: {
+								url: "attachment://northwood-staff.jpg"
+							},
+							fields: [
+								{
+									name: 'Kills',
+									value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
+									inline: true
+								},
+								{
+									name: 'Deaths',
+									value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
+									inline: true
+								},
+								{
+									name: 'K/D Ratio',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+									value: `Human K/D: ${calculateKD(rows[0].HumanKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].ScpKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									inline: true
+								},
+								{
+									name: 'Total Shots Fired',
+									value: `${rows[0].ShotsFired}`,
+									inline: true
+								},
+								{
+									name: 'Total Hits',
+									value: `${rows[0].ShotsHit}`,
+									inline: true
+								},
+								{
+									name: 'Accuracy',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ShotsHit / rows[0].ShotsFired) * 100}%`,
+									value: `${((rows[0].ShotsHit / rows[0].ShotsFired) * 100).toFixed(1)}%`,
+									inline: true
+								},
+								{
+									name: "Throwables Used",
+									value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+									inline: true
+								},
+								{
+									name: "Healing Items Used",
+									value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed + rows[0].Scp500SUsed}`,
+									inline: true
+								},
+								{
+									name: "SCP Items Used",
+									value: rows[0].ScpItemsUsed + rows[0].Scp500SUsed,
+									inline: true
+								},
+								{
+									name: "Total Playtime",
+									// get from rows.MinutesPlayed, and calculate days hours and minutes
+									value: formatTime(rows[0].MinutesPlayed),
+									inline: true
+								},
+								{
+									name: "Total Escapes",
+									value: `${rows[0].TimesEscaped}`,
+									inline: true
+								},
+								{
+									name: "Fastest Escape",
+									// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
+									value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+									inline: true
+								}
+							],
+							timestamp: new Date(),
+							footer: {
+								// Random quote
+								text: quotes[Math.floor(Math.random() * quotes.length)]
+							}
+						};
+						await interaction.editReply({ embeds: [embed], files: [attachment] });
 					}
-
 				}
 			} catch (err) {
 				throw new Error(err.stack);
@@ -365,7 +547,7 @@ client.on("interactionCreate", async interaction => {
 									steamids: steamID,
 									callback: async (status, data) => {
 										if (!data.response) {
-											interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
+											interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
 											throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
 										}
 										username = data.response.players[0].personaname;
@@ -504,454 +686,887 @@ client.on("interactionCreate", async interaction => {
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by points\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Value}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
 					case "humankills":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY HumanKills DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by humans killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HumanKills}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
 					case "scpkills":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpKills DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by SCPs killed\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpKills}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
-					case "humandeaths": // Most deaths as human
+
+
+					case "humandeaths":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY HumanDeaths DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by deaths as a human\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.HumanDeaths}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
-					case "scpdeaths": // Most deaths as human
+
+
+					case "scpdeaths":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpDeaths DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by deaths as an SCP\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpDeaths}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "kd":
 						rows = await conn.query("SELECT *, ( CASE WHEN ((HumanDeaths + ScpDeaths) = 0) THEN (HumanKills + ScpKills) ELSE (HumanKills + ScpKills)/(HumanDeaths + ScpDeaths) END ) AS KD FROM Stats ORDER BY KD DESC LIMIT 10;");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by best total K/D ratio\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.KD).toFixed(1)}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "escapes":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY TimesEscaped ASC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by most escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.TimesEscaped}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "fastestescape":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY FastestEscape ASC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by most escapes\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatSeconds(row.FastestEscape)}`).join("\n")}`,
+										description: `## Top 10 players by fastest escape\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatSeconds(row.FastestEscape)}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "scpitems":
-						rows = await conn.query("SELECT * FROM Stats ORDER BY ScpItemsUsed DESC LIMIT 10");
+						rows = await conn.query("SELECT *, (ScpItemsUsed + Scp500SUsed) AS Total FROM Stats ORDER BY ScpItems DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItemsUsed}`).join("\n")}`,
+										description: `## Top 10 players by most SCP items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.ScpItems}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "healingitems":
-						rows = await conn.query("SELECT *, (MedkitsUsed + AdrenalinesUsed + PainkillersUsed) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
+						rows = await conn.query("SELECT *, (MedkitsUsed + AdrenalinesUsed + PainkillersUsed + Scp500SUsed) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by most healing items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "throwables":
 						rows = await conn.query("SELECT *, (FlashbangsThrown + HeGrenadesThrown + Scp018sThrown + GhostLightsThrown) AS Total FROM Stats ORDER BY Total DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
 										description: `## Top 10 players by most throwable items used\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.Total}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
+
+
 					case "playtime":
 						rows = await conn.query("SELECT * FROM Stats ORDER BY MinutesPlayed DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
+
 							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by most time played\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatTime(row.MinutesPlayed)}`).join("\n")}`,
+										description: `## Top 10 players by most time played\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${formatSeconds(row.MinutesPlayed)}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
+
 									await interaction.editReply({ embeds: [embed] });
 								}
-							})
+							});
 						}
 						break;
-					case "accuracy": // Get top 10 players by accuracy ((ShotsHit / r.ShotsFired) * 100)
+
+
+					case "accuracy":
 						rows = await conn.query("SELECT *, (ShotsHit / ShotsFired) * 100 AS Accuracy FROM playerstats.Stats WHERE ShotsFired > 500 ORDER BY Accuracy DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
-							// Get their names
+							const steamClient = new steam({
+								apiKey: config.steam_api_key,
+								format: "json"
+							});
+
+							let names = [];
+							let steamids = [];
+							let discordUsernames = [];
+
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
+							steamClient.getPlayerSummaries({
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
+								callback: async (status, data) => {
+									if (!data.response) {
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
+									}
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
+									const embed = {
+										color: 0x0099ff,
+										description: `## Top 10 players by best shot accuracy\n### **Only players with over 500 fired rounds will appear here!**\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
+										timestamp: new Date(),
+										footer: {
+											text: quotes[Math.floor(Math.random() * quotes.length)]
+										}
+									};
+
+									await interaction.editReply({ embeds: [embed] });
+								}
+							});
+						}
+						break;
+					case "zombiekills": // Get top 10 players by zombie kills
+						rows = await conn.query("SELECT * FROM Stats ORDER BY KillsAsZombie DESC LIMIT 10");
+						if (rows.length === 0) {
+							await interaction.editReply({ content: "No stats found.", ephemeral: true });
+						} else {
 							const steamClient = new steam({
 								apiKey: config.steam_api_key,
 								format: "json"
 							});
 							let names = [];
+
+							const steamids = [];
+							const discordUsernames = [];
+							for (const row of rows) {
+								const identifier = row.Identifier.split("@")[0];
+								if (row.Identifier.endsWith("@northwood")) {
+									steamids.push(identifier);
+									discordUsernames.push(null); // Placeholder for players with @northwood identifier
+								} else if (row.Identifier.endsWith("@discord")) {
+									steamids.push(null); // Placeholder for players with @discord identifier
+									const user = client.users.cache.get(identifier);
+									discordUsernames.push(user ? user.username : "Unknown"); // Use Discord username if available, otherwise use "Unknown"
+								} else {
+									steamids.push(identifier + "@steam");
+									discordUsernames.push(null); // Placeholder for other cases
+								}
+							}
+
 							steamClient.getPlayerSummaries({
-								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
+								steamids: steamids.filter(id => id !== null), // Filter out placeholder values
 								callback: async (status, data) => {
 									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile.", ephemeral: true });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occurred while getting the user's Steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the Steam API down?");
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
-									//console.log(names);
+
+									names = rows.map((row, index) => {
+										if (row.Identifier.endsWith("@northwood")) {
+											return steamids[index]; // Use the first half of the identifier directly
+										} else if (row.Identifier.endsWith("@discord")) {
+											return discordUsernames[index]; // Use Discord username
+										} else {
+											const player = data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]);
+											return player ? player.personaname : "Unknown"; // Use Steam API data if available, otherwise use "Unknown"
+										}
+									});
+
 									const embed = {
 										color: 0x0099ff,
-										description: `## Top 10 players by best shot accuraccy\n### **Only players with over 500 fired rounds will appear here!**\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${new Number(row.Accuracy).toFixed(1)}%`).join("\n")}`,
+										description: `## Top 10 players by most kills as zombie\n${rows.map((row, index) => `${index + 1}. ${names[index]} - ${row.KillsAsZombie}`).join("\n")}`,
 										timestamp: new Date(),
 										footer: {
-											// Random quote
 											text: quotes[Math.floor(Math.random() * quotes.length)]
 										}
 									};
 									await interaction.editReply({ embeds: [embed] });
 								},
-							})
+							});
 						}
 						break;
 
@@ -990,7 +1605,8 @@ process.on('uncaughtException', async (err) => {
 	await error_webhook.send({
 		embeds: [{
 			title: "Uncaught Exception",
-			description: `\`\`\`${err}\`\`\``,
+			// full stack trace
+			description: `\`\`\`${err.stack}\`\`\``,
 			color: 0xff0000,
 			timestamp: new Date(),
 			footer: {
@@ -1007,7 +1623,7 @@ process.on('unhandledRejection', async (err) => {
 	await error_webhook.send({
 		embeds: [{
 			title: "Unhandled Rejection",
-			description: `\`\`\`${err}\`\`\``,
+			description: `\`\`\`${err.stack}\`\`\``,
 			color: 0xff0000,
 			timestamp: new Date(),
 			footer: {
