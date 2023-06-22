@@ -964,40 +964,19 @@ client.on("interactionCreate", async interaction => {
 								format: "json"
 							});
 							let names = [];
-							// create an indexed array of identifiers
-							identifiers = rows.map(row => row.Identifier);
-
-							// seperate the steam and northwood identifiers in an object, key is the rank, value is the identifier
-							steamIdentifiers = {};
-							northwoodIdentifiers = {};
-							identifiers.forEach(id1 => {
-								if(id1.split("@northwood")[1] === "@northwood") {
-									northwoodIdentifiers[identifiers.indexOf(id1)] = id1;
-								} else {
-									steamIdentifiers[identifiers.indexOf(id1)] = id1;
-								}
-							});
-
-
-							console.log(steamIdentifiers);
-							console.log(northwoodIdentifiers);
 
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
-									if(row.Identifier.split("@northwood")[1] === "@northwood") {
-										// gotta handle northwood staff differently
-										names = rows.map(row => row.Identifier.split("@northwood")[0]);
-
-									} else {
-										// Steam users
-										if (!data.response) {
-											interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
-											throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
-										}
-										//console.log(data.response.players);
-										names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
+									// Steam users
+									if (!data.response) {
+										// Either steam is down or the user doesnt have a standard steam identifier, possibly nw staff, just use the identifier as the name
+										names = rows.map(row => row.Identifier);
+										//interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										//throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
 									}
+									//console.log(data.response.players);
+									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
