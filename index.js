@@ -975,6 +975,7 @@ client.on("interactionCreate", async interaction => {
 										//interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
 										//throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
 									}
+									console.log(data.response)
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
