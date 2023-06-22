@@ -1031,7 +1031,8 @@ process.on('uncaughtException', async (err) => {
 	await error_webhook.send({
 		embeds: [{
 			title: "Uncaught Exception",
-			description: `\`\`\`${err}\`\`\``,
+			// full stack trace
+			description: `\`\`\`${err.stack}\`\`\``,
 			color: 0xff0000,
 			timestamp: new Date(),
 			footer: {
@@ -1048,7 +1049,7 @@ process.on('unhandledRejection', async (err) => {
 	await error_webhook.send({
 		embeds: [{
 			title: "Unhandled Rejection",
-			description: `\`\`\`${err}\`\`\``,
+			description: `\`\`\`${err.stack}\`\`\``,
 			color: 0xff0000,
 			timestamp: new Date(),
 			footer: {
