@@ -970,12 +970,10 @@ client.on("interactionCreate", async interaction => {
 								callback: async (status, data) => {
 									// Steam users
 									if (!data.response) {
-										// Either steam is down or the user doesnt have a standard steam identifier, possibly nw staff, just use the identifier as the name
-										names = rows.map(row => row.Identifier);
-										//interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
-										//throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
 									}
-									console.log(data.response)
+									console.log(rows.map(row => row.Identifier.split("@northwood")[0]))
 									//console.log(data.response.players);
 									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
