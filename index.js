@@ -967,12 +967,19 @@ client.on("interactionCreate", async interaction => {
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
-									if (!data.response) {
-										interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
-										throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+									if(row.Identifier.split("@northwood")[1] === "@northwood") {
+										// gotta handle northwood staff differently
+										names = rows.map(row => row.Identifier.split("@northwood")[0]);
+
+									} else {
+										// Steam users
+										if (!data.response) {
+											interaction.editReply({ content: "An error occured while getting the user's steam profile. [Steam could be down](<https://steamstat.us>), please try again later!" });
+											throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
+										}
+										//console.log(data.response.players);
+										names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									}
-									//console.log(data.response.players);
-									names = rows.map(row => data.response.players.find(player => player.steamid === row.Identifier.split("@steam")[0]).personaname);
 									//console.log(names);
 									const embed = {
 										color: 0x0099ff,
