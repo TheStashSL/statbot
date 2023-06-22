@@ -964,6 +964,16 @@ client.on("interactionCreate", async interaction => {
 								format: "json"
 							});
 							let names = [];
+							// create an indexed array of identifiers
+							identifiers = rows.map(row => row.Identifier);
+
+							// seperate the steam and northwood identifiers
+							steamIdentifiers = identifiers.filter(identifier => identifier.split("@")[1] === "steam");
+							northwoodIdentifiers = identifiers.filter(identifier => identifier.split("@")[1] === "northwood");
+
+							console.log(steamIdentifiers);
+							console.log(northwoodIdentifiers);
+
 							steamClient.getPlayerSummaries({
 								steamids: rows.map(row => row.Identifier.split("@steam")[0]),
 								callback: async (status, data) => {
