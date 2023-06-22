@@ -62,10 +62,6 @@
 						"value": "scpdeaths"
 					},
 					{
-						"name": "Kills as Zombie",
-						"value": "zombiekills"
-					},
-					{
 						"name": "K/D Ratio",
 						"value": "kd"
 					},
