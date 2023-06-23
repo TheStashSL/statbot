@@ -710,7 +710,7 @@ client.on("interactionCreate", async interaction => {
 						}
 						break;
 					case "escapes":
-						rows = await conn.query("SELECT * FROM Stats ORDER BY TimesEscaped ASC LIMIT 10");
+						rows = await conn.query("SELECT * FROM Stats ORDER BY TimesEscaped DESC LIMIT 10");
 						if (rows.length === 0) {
 							await interaction.editReply({ content: "No stats found.", ephemeral: true });
 						} else {
