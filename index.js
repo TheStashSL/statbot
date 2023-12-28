@@ -486,7 +486,7 @@ client.on("interactionCreate", async interaction => {
 								type: 2,
 								label: "Link Account",
 								style: 5,
-								url: "https://link.mydickdoesnt.work/"
+								url: "https://link.thestash.network/"
 							}
 						]
 					}
