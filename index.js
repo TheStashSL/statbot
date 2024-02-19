@@ -139,11 +139,14 @@ client.on("ready", async () => {
 client.on('messageCreate', async message => {
 	if (message.author.bot) return;
 	// see if its between may 31st at 4am utc and may 32nd and 4am utc
-	//const start = new Date("2024-05-31T04:00:00.000Z");
-	const start = new Date(); // Testing
+	const start = new Date("2024-05-31T04:00:00.000Z");
+	//const start = new Date("2024-01-01T00:00:00.000Z"); // Testing
 	const end = new Date("2024-06-01T04:00:00.000Z");
 	const now = new Date();
+	console.log(`Start: ${start}, End: ${end}, Now: ${now}`);
+	console.log((now > start && now < end))
 	if ((now > start && now < end) || config.fish_react_this_man) {
+		//if(message.author.bot) return; // ignore those things :)
 		// fish react this man
 		message.react("🐟");
 	}
