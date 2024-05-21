@@ -313,7 +313,12 @@ client.on("interactionCreate", async interaction => {
 			break;
 		case "stats": // Get stats via discord user
 			// Check if they're trying to check the bot stats
-			userId = interaction.options.getUser('user').id || interaction.user.id;
+			userId = 0
+			if (interaction.options.getUser("user")) {
+				userId = interaction.options.getUser("user").id;
+			} else {
+				userId = interaction.user.id;
+			}
 			// See if the user from the interaction is in the AccountLinks table
 			try {
 				const [accrows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [userId]);
