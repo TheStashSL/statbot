@@ -679,7 +679,7 @@ client.on("interactionCreate", async interaction => {
 			// Check if they're already linked, if not, link their Discord user ID to the identifier {discord_id}@discord
 			try {
 				const [rows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
-				if (rows.length === 0) {
+				if (!rows) {
 					await conn.query("INSERT INTO AccountLinks (discord_id, identifier) VALUES (?, ?)", [interaction.user.id, interaction.user.id + "@discord"]);
 					await interaction.editReply({ content: "Account linked successfully!", ephemeral: true });
 				} else {
