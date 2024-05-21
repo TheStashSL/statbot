@@ -173,12 +173,6 @@ client.on("interactionCreate", async interaction => {
 	}
 	switch (interaction.commandName) {
 		case "statsid":
-			// check if identifier has a suffix, if not assume steam
-			let ident = interaction.options.getString("identifier");
-			if (!ident.includes("@")) {
-				ident += "@steam";
-			}
-			// Get stats from database
 			try {
 				const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
 				if (rows.length === 0) {
@@ -196,7 +190,92 @@ client.on("interactionCreate", async interaction => {
 					if (rows[0].Identifier.includes("@discord")) {
 						// Discord
 						username = client.users.cache.get(rows[0].Identifier.split("@discord")[0]).tag;
-						// Just gonna ignore this for now as 99.99% of players are on steam
+						embed = {
+							color: 0x0099ff,
+							title: `${username}'s Stats`,
+							description: `## Total Points: ${points}`,
+							author: {
+								name: "SCP:SL Stats"
+							},
+							thumbnail: {
+								url: client.users.cache.get(rows[0].Identifier.split("@discord")[0]).displayAvatarURL()
+							},
+							fields: [
+								{
+									name: 'Kills',
+									value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
+									inline: true
+								},
+								{
+									name: 'Deaths',
+									value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
+									inline: true
+								},
+								{
+									name: 'K/D Ratio',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+									value: `Human K/D: ${calculateKD(rows[0].HumanKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].ScpKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									inline: true
+								},
+								{
+									name: 'Total Shots Fired',
+									value: `${rows[0].ShotsFired}`,
+									inline: true
+								},
+								{
+									name: 'Total Hits',
+									value: `${rows[0].ShotsHit}`,
+									inline: true
+								},
+								{
+									name: 'Accuracy',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ShotsHit / rows[0].ShotsFired) * 100}%`,
+									value: `${((rows[0].ShotsHit / rows[0].ShotsFired) * 100).toFixed(1)}%`,
+									inline: true
+								},
+								{
+									name: "Throwables Used",
+									value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+									inline: true
+								},
+								{
+									name: "Healing Items Used",
+									value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+									inline: true
+								},
+								{
+									name: "SCP Items Used",
+									value: rows[0].ScpItemsUsed,
+									inline: true
+								},
+								{
+									name: "Total Playtime",
+									// get from rows.MinutesPlayed, and calculate days hours and minutes
+									value: formatTime(rows[0].MinutesPlayed),
+									inline: true
+								},
+								{
+									name: "Total Escapes",
+									value: `${rows[0].TimesEscaped}`,
+									inline: true
+								},
+								{
+									name: "Fastest Escape",
+									// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
+									value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+									inline: true
+								}
+							],
+							timestamp: new Date(),
+							footer: {
+								// Random quote
+								text: quotes[Math.floor(Math.random() * quotes.length)]
+							}
+						}
+						await interaction.editReply({ embeds: [embed] });
 					} else if (rows[0].Identifier.includes("@steam")) {
 						// Steam
 						// Lets get their steam username
@@ -213,7 +292,7 @@ client.on("interactionCreate", async interaction => {
 									throw new Error("stats command, steamClient.getPlayerSummaries callback, data.response is undefined, is the steam API down?");
 								}
 								username = data.response.players[0].personaname;
-								const embed = {
+								embed = {
 									color: 0x0099ff,
 									title: `${username}'s Stats`,
 									description: `## Total Points: ${points}`,
@@ -302,11 +381,99 @@ client.on("interactionCreate", async interaction => {
 								await interaction.editReply({ embeds: [embed] });
 							}
 						});
+					} else if(rows[0].Identifier.endsWith("@northwood")) { // just use the left part of the identifier
+						username = rows[0].Identifier.split("@northwood")[0];
+						embed = {
+							color: 0x0099ff,
+							title: `${username}'s Stats`,
+							description: `## Total Points: ${points}`,
+							author: {
+								name: "SCP:SL Stats"
+							},
+							thumbnail: {
+								url: "https://scpslgame.com/wp-content/uploads/2020/10/4096-150x150.png"
+							},
+							fields: [
+								{
+									name: 'Kills',
+									value: `Killed Humans: ${rows[0].HumanKills}\nKilled SCPs: ${rows[0].ScpKills}\nTotal Kills: ${rows[0].ScpKills + rows[0].HumanKills}`,
+									inline: true
+								},
+								{
+									name: 'Deaths',
+									value: `Deaths as Human: ${rows[0].HumanDeaths}\nDeaths as SCP: ${rows[0].ScpDeaths}\nTotal Deaths: ${rows[0].ScpDeaths + rows[0].HumanDeaths}`,
+									inline: true
+								},
+								{
+									name: 'K/D Ratio',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									//value: `${((rows[0].ScpKills + rows[0].HumanKills) / (rows[0].ScpDeaths + rows[0].HumanDeaths)).toFixed(1)}`,
+									value: `Human K/D: ${calculateKD(rows[0].HumanKills, rows[0].HumanDeaths)}\nSCP K/D: ${calculateKD(rows[0].ScpKills, rows[0].ScpDeaths)}\nTotal K/D: ${calculateKD(rows[0].ScpKills + rows[0].HumanKills, rows[0].ScpDeaths + rows[0].HumanDeaths)}`,
+									inline: true
+								},
+								{
+									name: 'Total Shots Fired',
+									value: `${rows[0].ShotsFired}`,
+									inline: true
+								},
+								{
+									name: 'Total Hits',
+									value: `${rows[0].ShotsHit}`,
+									inline: true
+								},
+								{
+									name: 'Accuracy',
+									// Cut off to the first decimal place
+									//value: `${(rows[0].ShotsHit / rows[0].ShotsFired) * 100}%`,
+									value: `${((rows[0].ShotsHit / rows[0].ShotsFired) * 100).toFixed(1)}%`,
+									inline: true
+								},
+								{
+									name: "Throwables Used",
+									value: `${rows[0].FlashbangsThrown + rows[0].HeGrenadesThrown + rows[0].Scp018sThrown + rows[0].GhostLightsThrown}`,
+									inline: true
+								},
+								{
+									name: "Healing Items Used",
+									value: `${rows[0].MedkitsUsed + rows[0].PainkillersUsed + rows[0].AdrenalinesUsed}`,
+									inline: true
+								},
+								{
+									name: "SCP Items Used",
+									value: rows[0].ScpItemsUsed,
+									inline: true
+								},
+								{
+									name: "Total Playtime",
+									// get from rows.MinutesPlayed, and calculate days hours and minutes
+									value: formatTime(rows[0].MinutesPlayed),
+									inline: true
+								},
+								{
+									name: "Total Escapes",
+									value: `${rows[0].TimesEscaped}`,
+									inline: true
+								},
+								{
+									name: "Fastest Escape",
+									// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
+									value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+									inline: true
+								}
+							],
+							timestamp: new Date(),
+							footer: {
+								// Random quote
+								text: quotes[Math.floor(Math.random() * quotes.length)]
+							}
+						}
+						await interaction.editReply({ embeds: [embed] });
 					}
 
 				}
 			} catch (err) {
-				throw new Error(err.stack);
+				console.log(err);
 			} finally {
 				if (conn) conn.end();
 			}
