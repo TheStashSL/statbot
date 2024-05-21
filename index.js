@@ -675,6 +675,22 @@ client.on("interactionCreate", async interaction => {
 				]
 			})
 			break;
+		case "linkdiscord": // For those using the Discord version of the game
+			// Check if they're already linked, if not, link their Discord user ID to the identifier {discord_id}@discord
+			try {
+				const [rows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
+				if (rows.length === 0) {
+					await conn.query("INSERT INTO AccountLinks (discord_id, identifier) VALUES (?, ?)", [interaction.user.id, interaction.user.id + "@discord"]);
+					await interaction.editReply({ content: "Account linked successfully!", ephemeral: true });
+				} else {
+					await interaction.editReply({ content: "You've already linked your account!", ephemeral: true });
+				}
+			} catch (err) {
+				console.log(err);
+			} finally {
+				if (conn) conn.end();
+			}
+			break;
 		case "unlink": // Unlink account
 			// Check AccountLinks table for the user, if they exist, delete them
 			try {

@@ -31,6 +31,11 @@
 		"type": 1
 	},
 	{
+		"name": "linkdiscord",
+		"description": "Only use this if you play the game through the Discord Game Library!",
+		"type": 1
+	},
+	{
 		"name": "unlink",
 		"description": "Unlink your Game and Discord accounts",
 		"type": 1
