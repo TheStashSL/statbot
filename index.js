@@ -173,6 +173,7 @@ client.on("interactionCreate", async interaction => {
 	}
 	switch (interaction.commandName) {
 		case "statsid":
+			ident = interaction.options.getString("identifier");
 			try {
 				const rows = await conn.query("SELECT * FROM Stats WHERE Identifier = ?", [ident]);
 				if (rows.length === 0) {
