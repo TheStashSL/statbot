@@ -675,7 +675,22 @@ client.on("interactionCreate", async interaction => {
 				]
 			})
 			break;
-
+		case "unlink": // Unlink account
+			// Check AccountLinks table for the user, if they exist, delete them
+			try {
+				const [rows] = await conn.query("SELECT * FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
+				if (rows.length === 0) {
+					await interaction.editReply({ content: "You haven't linked your account yet!", ephemeral: true });
+				} else {
+					await conn.query("DELETE FROM AccountLinks WHERE discord_id = ?", [interaction.user.id]);
+					await interaction.editReply({ content: "Account unlinked successfully!", ephemeral: true });
+				}
+			} catch (err) {
+				console.log(err);
+			} finally {
+				if (conn) conn.end();
+			}
+			break;
 		case "leaderboard": // Leaderboard command
 			option = interaction.options.getString("type") || "points";
 			try {
