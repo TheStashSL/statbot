@@ -266,7 +266,7 @@ client.on("interactionCreate", async interaction => {
 								{
 									name: "Fastest Escape",
 									// If total escapes is 0, set to N/A, otherwise calculate time, value is in seconds with decimal places
-									value: `${rows[0].TimesEscaped === 0 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
+									value: `${rows[0].TimesEscaped === 99999999 ? "N/A" : formatSeconds(rows[0].FastestEscape)}`,
 									inline: true
 								}
 							],
